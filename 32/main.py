@@ -14,15 +14,15 @@ client = MQTTClient(client_id=const.CLIENT_ID,
                     server=const.SERVER, port=const.PORT)
 
 
-
+value = 0
 def Readlight():
     # 获取光照强度
-    adc=machine.ADC(0)
+    adc=machine.ADC(machine.Pin(36))
     value=adc.read()
     # 积分滤波
     value=0.3*value + 0.7*adc.read() ;
     # 0-1024 等比划分为百分比
-    return round(value*100/1024)
+    return round(value*100/4095)
     
 
 
@@ -58,14 +58,18 @@ def qqt(l):
 
 def main():
     # 主函数
-    do_connect()
-    client.set_callback(sub_cb)
-    client.connect()
-    client.subscribe(b"motor")
+    try:
+        do_connect()
+        client.set_callback(sub_cb)
+        client.connect()
+        client.subscribe(b"motor")
+    except Exception as e:
+        print(e)
     start_time = time.time()
     while True:
         try:
-            if time.time() - start_time == 15:
+            print(time.time())
+            if time.time() - start_time == 30:
                 l = Readlight()
                 qqt(l)
                 start_time = time.time()
